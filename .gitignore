@@ -15,7 +15,7 @@ data/processed/
 data/features/
 # Models
 models/
-# Notebook checkpoints
+# Notebook
 .ipynb_checkpoints/
 # IDE
 .vscode/
@@ -27,4 +27,3 @@ models/
 *.log
 # Environment
 .env
-
