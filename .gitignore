@@ -1,10 +1,30 @@
-# Python-generated files
+# Python
 __pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
+*.pyc
+*.pyo
+*.pyd
+# Virtual env
+.venv/
+# MLflow
+mlruns/
+# DVC
+.dvc/cache/
+# Data
+data/raw/
+data/processed/
+data/features/
+# Models
+models/
+# Notebook checkpoints
+.ipynb_checkpoints/
+# IDE
+.vscode/
 
-# Virtual environments
-.venv
+.idea/
+# OS
+.DS_Store
+# Logs
+*.log
+# Environment
+.env
+
