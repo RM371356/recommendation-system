@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # README
 
 > Sistema de recomendação de filmes desenvolvido com **Python**, **PyTorch**, **FastAPI**, **MLflow**, **DVC** e **uv**.
@@ -441,3 +442,6 @@ Essa abordagem garante que o código permaneça padronizado, que o pipeline de M
 # Licença
 
 Projeto desenvolvido para fins acadêmicos (Tech Challenge).
+=======
+Projeto de Recomendação da FIAP
+>>>>>>> bb88f6dca1e1bace9202d3afa24a5d18ee7dbf70

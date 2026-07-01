@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 __pycache__/
 .pytest_cache/
 .venv/
@@ -7,3 +8,34 @@ mlruns/
 *.pyo
 *.pyd
 .DS_Store
+=======
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+# Virtual env
+.venv/
+# MLflow
+mlruns/
+# DVC
+.dvc/cache/
+# Data
+data/raw/
+data/processed/
+data/features/
+# Models
+models/
+# Notebook
+.ipynb_checkpoints/
+# IDE
+.vscode/
+
+.idea/
+# OS
+.DS_Store
+# Logs
+*.log
+# Environment
+.env
+>>>>>>> bb88f6dca1e1bace9202d3afa24a5d18ee7dbf70
