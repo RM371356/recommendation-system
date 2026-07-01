@@ -1,0 +1,46 @@
+stages:
+  preprocess:
+    cmd: python -m src.data.preprocess
+    deps:
+      - data/raw/ratings.csv
+      - src/data/preprocess.py
+    outs:
+      - data/processed/ratings_processed.csv
+
+  feature_eng:
+    cmd: python -m src.features.build_features
+    deps:
+      - data/processed/ratings_processed.csv
+      - src/features/build_features.py
+    outs:
+      - data/features/features.csv
+      - artifacts/encoders
+      - artifacts/metadata
+
+  split_data:
+    cmd: python -m src.data.split_data
+    deps:
+      - data/features/features.csv
+      - src/data/split_data.py
+    outs:
+      - data/splits/train.csv
+      - data/splits/val.csv
+      - data/splits/test.csv
+
+  train:
+    cmd: python -m src.training.train
+    deps:
+      - data/splits/train.csv
+      - data/splits/val.csv
+      - src/training/train.py
+      - src/models/mlp_model.py
+    outs:
+      - models
+      - artifacts/model
+
+  evaluate:
+    cmd: python -m src.evaluation.evaluate
+    deps:
+      - src/evaluation/evaluate.py
+      - data/splits/test.csv
+      - models/best_model.pth

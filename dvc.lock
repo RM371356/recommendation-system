@@ -1,0 +1,68 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: python -m src.data.preprocess
+    deps:
+    - path: data/raw/ratings.csv
+      hash: md5
+      md5: aa3c326e7af49d0ea910f77132e4b7d8
+      size: 2580392
+    - path: src/data/preprocess.py
+      hash: md5
+      md5: 75b7421f9986381e00845fac31156ab3
+      size: 3289
+    outs:
+    - path: data/processed/ratings_processed.csv
+      hash: md5
+      md5: d7d5f5ac6fec68b3cd7a8f516f5f6261
+      size: 2649616
+  feature_eng:
+    cmd: python -m src.features.build_features
+    deps:
+    - path: data/processed/ratings_processed.csv
+      hash: md5
+      md5: d7d5f5ac6fec68b3cd7a8f516f5f6261
+      size: 2649616
+    - path: src/features/build_features.py
+      hash: md5
+      md5: 862a19a632ebc7f06bac44f76a79d865
+      size: 2772
+    outs:
+    - path: artifacts/encoders
+      hash: md5
+      md5: fedb5fe42f0bdc8df0871ed1995a9fb7.dir
+      size: 86998
+      nfiles: 2
+    - path: artifacts/metadata
+      hash: md5
+      md5: 0cf7f7c0e5248edaefcbe8c68addbac8.dir
+      size: 515699
+      nfiles: 1
+    - path: data/features/features.csv
+      hash: md5
+      md5: 3aeb36f60d3eb39e59b0f924ef3d1a24
+      size: 3502903
+  split_data:
+    cmd: python -m src.data.split_data
+    deps:
+    - path: data/features/features.csv
+      hash: md5
+      md5: 3aeb36f60d3eb39e59b0f924ef3d1a24
+      size: 3502903
+    - path: src/data/split_data.py
+      hash: md5
+      md5: cc6d194452b652d9a81b79e4f7ed4903
+      size: 903
+    outs:
+    - path: data/splits/test.csv
+      hash: md5
+      md5: 50d5fde7ae7107f7834a4f01790561ab
+      size: 525868
+    - path: data/splits/train.csv
+      hash: md5
+      md5: ae89c993ce2314703e07459b0e9589a5
+      size: 2451748
+    - path: data/splits/val.csv
+      hash: md5
+      md5: 647cdb2e70779681b7386122db4b774f
+      size: 525403

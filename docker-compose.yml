@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.14.1
+    container_name: mlflow-server
+    ports:
+      - "5000:5000"
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+
+  recommender:
+    build: .
+    container_name: recommender-system
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - mlflow
+    command: python -m src.training.train
+
+  api:
+    build: .
+    container_name: recommender-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - mlflow
+    command: >
+      uv run uvicorn src.api.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload
