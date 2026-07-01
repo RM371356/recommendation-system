@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # README
 
 > Sistema de recomendação de filmes desenvolvido com **Python**, **PyTorch**, **FastAPI**, **MLflow**, **DVC** e **uv**.
