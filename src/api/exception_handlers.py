@@ -14,6 +14,9 @@ class RecommendationError(Exception):
         self.status_code = status_code
 
 
+RecommendationException = RecommendationError
+
+
 def register_exception_handlers(
     app: FastAPI,
 ):

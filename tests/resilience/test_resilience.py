@@ -70,11 +70,19 @@ def test_movie_repository_raises_for_invalid_schema(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_service_returns_popularity_fallback_without_model() -> None:
+def test_service_returns_popularity_fallback_without_model(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """
     Sem artefatos e sem features.csv, o serviço deve retornar o fallback
     absoluto (lista hardcoded de "Popular Movie N").
+
+    Roda dentro de um diretório temporário limpo para garantir que nenhum
+    artefato/feature gerado pelo pipeline (em execuções reais) contamine o
+    cenário de cold-start absoluto.
     """
+
+    monkeypatch.chdir(tmp_path)
 
     service = RecommendationService()
     response = service.recommend(user_id=1, top_k=5)
@@ -85,7 +93,11 @@ def test_service_returns_popularity_fallback_without_model() -> None:
     assert all(t.startswith("Popular Movie ") for t in titles)
 
 
-def test_service_fallback_respects_top_k() -> None:
+def test_service_fallback_respects_top_k(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+
     service = RecommendationService()
 
     response_1 = service.recommend(user_id=1, top_k=1)
