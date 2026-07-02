@@ -1,4 +1,3 @@
-from typing import Tuple
 
 import pandas as pd
 import torch
@@ -32,7 +31,7 @@ class RatingsDataset(Dataset):
     def __getitem__(
         self,
         idx: int,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
         return (
             self.users[idx],

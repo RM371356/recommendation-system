@@ -6,14 +6,16 @@ import pandas as pd
 import torch
 
 from src.config.settings import settings
-from src.models.model_factory import ModelFactory
 from src.evaluation.metrics import RecommendationMetrics
+from src.models.model_factory import ModelFactory
 
 
 def evaluate_model() -> None:
     """
-    A função evaluate_model é responsável por avaliar o desempenho do modelo de recomendação usando o conjunto de testes.
-    Ela carrega o modelo treinado, infere previsões sobre o split de teste e calcula métricas de desempenho reais.
+    A função evaluate_model é responsável por avaliar o desempenho do modelo de
+      recomendação usando o conjunto de testes.
+    Ela carrega o modelo treinado, infere previsões sobre o split de teste e calcula
+      métricas de desempenho reais.
     """
     # Verifica caminhos de dependências
     test_path = Path("data/splits/test.csv")
@@ -26,7 +28,7 @@ def evaluate_model() -> None:
         )
 
     # Carrega as configurações de arquitetura do modelo
-    with open(config_path, "r", encoding="utf8") as file:
+    with open(config_path, encoding="utf8") as file:
         config = json.load(file)
 
     # Reconstrói a estrutura do modelo e carrega os pesos treinados

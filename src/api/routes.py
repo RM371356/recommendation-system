@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends
 
 from src.api.dependencies import get_recommendation_service
 from src.api.schemas import (
+    HealthResponse,
     RecommendationRequest,
     RecommendationResponse,
-    HealthResponse,
 )
 from src.inference.cache import cache
 from src.services.recommendation_service import RecommendationService
