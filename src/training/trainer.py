@@ -49,10 +49,42 @@ class Trainer:
                 patience=3
             )
         )
+    
+    def validate(
+        self,
+        val_loader: DataLoader,
+    ) -> float:
+
+        self.model.eval()
+
+        total_loss = 0.0
+
+        with torch.no_grad():
+
+            for users, items, labels in val_loader:
+
+                users = users.to(self.device)
+                items = items.to(self.device)
+                labels = labels.to(self.device)
+
+                predictions = self.model(
+                    users,
+                    items,
+                )
+
+                loss = self.loss_function(
+                    predictions.squeeze(),
+                    labels.float(),
+                )
+
+                total_loss += loss.item()
+
+        return total_loss / len(val_loader)
 
     def train(
         self,
         train_loader: DataLoader,
+        val_loader: DataLoader,
         epochs: int,
     ) -> None:
 
@@ -128,6 +160,10 @@ class Trainer:
                 epoch_loss
                 / len(train_loader)
             )
+ 
+            val_loss = self.validate(
+                val_loader,
+            )
 
             elapsed = (
                 time.time()
@@ -135,9 +171,10 @@ class Trainer:
             )
 
             logger.info(
-                f"Epoch {epoch+1} finished | "
-                f"Loss={avg_loss:.4f} | "
-                f"Time={elapsed:.2f}s"
+                f"Epoch {epoch+1}/{epochs} | "
+                f"Train={avg_loss:.4f} | "
+                f"Validation={val_loss:.4f}"
+                f" | Time={elapsed:.2f}s"
             )
 
             mlflow.log_metric(
@@ -146,9 +183,15 @@ class Trainer:
                 step=epoch,
             )
 
+            mlflow.log_metric(
+                "val_loss",
+                val_loss,
+                step=epoch,
+            )
+
             stop_training = (
                 self.early_stopping.step(
-                    avg_loss,
+                    val_loss,
                     self.model,
                 )
             )

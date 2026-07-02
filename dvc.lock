@@ -66,3 +66,48 @@ stages:
       hash: md5
       md5: 647cdb2e70779681b7386122db4b774f
       size: 525403
+  train:
+    cmd: python -m src.training.train
+    deps:
+    - path: data/splits/train.csv
+      hash: md5
+      md5: ae89c993ce2314703e07459b0e9589a5
+      size: 2451748
+    - path: data/splits/val.csv
+      hash: md5
+      md5: 647cdb2e70779681b7386122db4b774f
+      size: 525403
+    - path: src/models/mlp_model.py
+      hash: md5
+      md5: 51131f5bdff70c0cf8707972ce528b5d
+      size: 3928
+    - path: src/training/train.py
+      hash: md5
+      md5: eb913d3dd6f177b444019a5ca11e27ad
+      size: 6353
+    outs:
+    - path: artifacts/model
+      hash: md5
+      md5: e7b343990b0c2d62a19423abc082294c.dir
+      size: 2866202
+      nfiles: 2
+    - path: models
+      hash: md5
+      md5: e7b343990b0c2d62a19423abc082294c.dir
+      size: 2866202
+      nfiles: 2
+  evaluate:
+    cmd: python -m src.evaluation.evaluate
+    deps:
+    - path: data/splits/test.csv
+      hash: md5
+      md5: 50d5fde7ae7107f7834a4f01790561ab
+      size: 525868
+    - path: models/best_model.pth
+      hash: md5
+      md5: ee0f17554823ffb73968023491280988
+      size: 2866103
+    - path: src/evaluation/evaluate.py
+      hash: md5
+      md5: e731a3499860e021104505e66a6301e2
+      size: 3261

@@ -209,24 +209,24 @@ def train_pipeline() -> None:
             with open(config_path, "w", encoding="utf8") as file:
                 json.dump(config, file, indent=4)
 
-        mlflow.pytorch.log_model(
-            pytorch_model=model,
-            artifact_path="model",
-        )
+        #mlflow.pytorch.log_model(
+        #    pytorch_model=model,
+        #    artifact_path="model",
+        #)
 
-        model_uri = (
-            f"runs:/{run.info.run_id}/model"
-        )
+        #model_uri = (
+        #    f"runs:/{run.info.run_id}/model"
+        #)
 
-        try:
-            mlflow.register_model(
-                model_uri=model_uri,
-                name="MovieRecommender",
-            )
-        except Exception as exc:
-            print(
-                f"Registry warning: {exc}"
-            )
+        #try:
+        #    mlflow.register_model(
+        #        model_uri=model_uri,
+        #        name="MovieRecommender",
+        #    )
+        #except Exception as exc:
+        #    print(
+        #        f"Registry warning: {exc}"
+        #    )
 
     print(
         "Training completed successfully."

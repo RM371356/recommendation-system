@@ -42,3 +42,4 @@ mlruns/
 
 # Ambiente virtual
 .venv/
+/models
