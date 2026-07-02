@@ -55,6 +55,16 @@ indent-style = "space"
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+markers = [
+    "smoke: testes de smoke (fumaça) — validação mínima do build",
+    "functional: testes unitários das regras de negócio",
+    "api: testes de contrato dos endpoints REST e schemas",
+    "integration: testes de integração end-to-end da inferência",
+    "security: testes de segurança / vulnerabilidade",
+    "resilience: testes de resiliência e tratamento de erros",
+    "data: testes de qualidade / integridade dos dados",
+    "performance: testes de performance (soft budgets)",
+]
 
 [build-system]
 requires = ["hatchling"]
