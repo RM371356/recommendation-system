@@ -29,7 +29,7 @@
 
 > *"A situação é a seguinte: plataformas de streaming lidam com catálogos enormes, e o usuário se perde no volume de opções. Sem uma boa recomendação, o engajamento cai e o conteúdo relevante fica invisível."*
 >
-> *"Para o desafio, usamos o dataset MovieLens, que traz milhões de avaliações de filmes feitas por usuários reais. O problema era claro: como prever, para cada usuário, quais filmes ele realmente vai gostar — e entregar isso de forma rápida e confiável?"*
+> *"Para o desafio, usamos o dataset MovieLens, com mais de 100 mil avaliações de filmes feitas por usuários reais. O problema era claro: como prever, para cada usuário, quais filmes ele realmente vai gostar — e entregar isso de forma rápida e confiável?"*
 
 ---
 
@@ -83,7 +83,7 @@
 
 **[TELA]** Slide "Resultado" (métricas + demonstração da resposta da API).
 
-> *"O resultado é um sistema completo e funcional. Temos uma API REST que devolve recomendações personalizadas, avaliada com métricas de classificação — acurácia, precisão, recall e F1. Ganhamos reprodutibilidade total com DVC e MLflow, robustez com o fallback de popularidade, e uma base de qualidade forte graças aos 143 testes."*
+> *"O resultado é um sistema completo e funcional. Temos uma API REST que devolve recomendações personalizadas, avaliada com métricas de classificação no conjunto de teste: acurácia de cerca de 70%, com precisão, recall e F1 todos na casa dos 0,70 — um resultado equilibrado. Ganhamos reprodutibilidade total com DVC e MLflow, robustez com o fallback de popularidade, e uma base de qualidade forte graças aos 143 testes."*
 >
 > *"Na prática: uma requisição POST no endpoint recommend, com um user_id, retorna em menos de dois segundos a lista dos melhores filmes para aquele usuário."*
 

@@ -92,14 +92,17 @@ class Predictor:
         # --- Obtém todos os filmes e filtra os já assistidos --------------
         all_movie_ids = self.movie_repo.all_movie_ids()
 
-        # Filtra apenas movie_ids que possuem índice no encoder
-        known_movie_ids = list(cache.movie_encoder.classes_)
+        # Filtra apenas movie_ids que possuem índice no encoder.
+        # Usa um set para busca O(1) — evita custo quadrático quando há
+        # milhares de filmes candidatos.
+        known_movie_ids = set(cache.movie_encoder.classes_.tolist())
         candidate_movie_ids = [m for m in all_movie_ids if m in known_movie_ids]
 
         # --- Batch inference ----------------------------------------------
-        movie_indices = np.array(
-            [self.encoder_loader.encode_movie(mid) for mid in candidate_movie_ids],
-            dtype=np.int64,
+        # Codifica todos os candidatos numa única chamada de transform,
+        # em vez de uma por filme (muito mais rápido para catálogos grandes).
+        movie_indices = cache.movie_encoder.transform(candidate_movie_ids).astype(
+            np.int64
         )
 
         user_tensor = torch.tensor(
