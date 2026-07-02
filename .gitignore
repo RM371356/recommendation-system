@@ -38,3 +38,6 @@ mlflow.db
 # Cache do DVC
 .dvc/cache/
 /models
+
+# Script gerador do PPT (nao versionar)
+apresentacao/gerar_ppt.py
