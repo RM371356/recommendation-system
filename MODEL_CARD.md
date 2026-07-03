@@ -172,20 +172,18 @@ O modelo é comparado com dois baselines do Scikit-Learn para validar o ganho ob
 
 | Métrica | Descrição |
 |---|---|
-| **RMSE** | Erro quadrático médio — penaliza erros grandes |
-| **MAE** | Erro absoluto médio — interpretação direta em escala de rating |
-| **Precision@K** | Proporção de filmes relevantes no top-K recomendado |
-| **Recall@K** | Proporção de filmes relevantes recuperados no top-K |
+| **Accuracy** | Proporção de predições corretas |
+| **Precision** | Proporção de recomendações relevantes entre as sugeridas |
+| **Recall** | Proporção de itens relevantes que foram recuperados |
+| **F1 Score** | Média harmônica entre Precision e Recall |
 
 ### Comparação com Baselines
 
-| Modelo | RMSE | MAE | Precision@10 | Recall@10 |
+| Modelo | Accuracy | Precision | Recall | F1 Score |
 |---|---|---|---|---|
-| Média Global (baseline) | — | — | — | — |
-| SVD (Scikit-Learn) | — | — | — | — |
-| **MLP PyTorch (este modelo)** | — | — | — | — |
+| Baseline (referência) | — | — | — | — |
+| **MLP PyTorch (este modelo)** | **0.7012** | **0.6901** | **0.7137** | **0.7017** |
 
-> ⚠️ Os valores das métricas serão preenchidos após a execução do pipeline completo via `dvc repro` e registro dos experimentos no MLflow.
 
 Os resultados de cada experimento estão disponíveis no MLflow Tracking Server e os artefatos em:
 
