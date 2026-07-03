@@ -1,6 +1,6 @@
+import io
 import json
 import sys
-import io
 from pathlib import Path
 
 import mlflow
@@ -8,17 +8,17 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 
-# Força encoding UTF-8 no stdout/stderr para evitar erros no Windows (CP1252)
-# com emojis que o MLflow imprime internamente
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
-
 from src.config.settings import settings
 from src.data.dataset import RatingsDataset
 from src.models.model_factory import ModelFactory
 from src.training.trainer import Trainer
-from src.utils.seed import set_seed
 from src.utils.logger import get_logger
+from src.utils.seed import set_seed
+
+# Força encoding UTF-8 no stdout/stderr para evitar erros no Windows (CP1252)
+# com emojis que o MLflow imprime internamente
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 logger = get_logger(__name__)
 
@@ -86,8 +86,8 @@ def configure_mlflow() -> None:
         logger.info(f"Using MLflow server tracking URI: {settings.mlflow_tracking_uri}")
     except Exception as exc:
         logger.warning(
-            f"Could not connect to MLflow server at {settings.mlflow_tracking_uri}: {exc}. "
-            "Falling back to local tracking directory (file:./mlruns)."
+            f"Could not connect to MLflow server at {settings.mlflow_tracking_uri}: {exc}",
+            f"Falling back to local tracking directory (file:./mlruns)."
         )
         mlflow.set_tracking_uri("file:./mlruns")
 
@@ -165,7 +165,7 @@ def train_pipeline() -> None:
         learning_rate=settings.learning_rate,
     )
 
-    with mlflow.start_run() as run:
+    with mlflow.start_run():
 
         mlflow.log_params(
             {
@@ -209,24 +209,24 @@ def train_pipeline() -> None:
             with open(config_path, "w", encoding="utf8") as file:
                 json.dump(config, file, indent=4)
 
-        mlflow.pytorch.log_model(
-            pytorch_model=model,
-            artifact_path="model",
-        )
+        #mlflow.pytorch.log_model(
+        #    pytorch_model=model,
+        #    artifact_path="model",
+        #)
 
-        model_uri = (
-            f"runs:/{run.info.run_id}/model"
-        )
+        #model_uri = (
+        #    f"runs:/{run.info.run_id}/model"
+        #)
 
-        try:
-            mlflow.register_model(
-                model_uri=model_uri,
-                name="MovieRecommender",
-            )
-        except Exception as exc:
-            print(
-                f"Registry warning: {exc}"
-            )
+        #try:
+        #    mlflow.register_model(
+        #        model_uri=model_uri,
+        #        name="MovieRecommender",
+        #    )
+        #except Exception as exc:
+        #    print(
+        #        f"Registry warning: {exc}"
+        #    )
 
     print(
         "Training completed successfully."

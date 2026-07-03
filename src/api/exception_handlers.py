@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 
-class RecommendationException(Exception):
+class RecommendationError(Exception):
 
     def __init__(
         self,
@@ -14,16 +14,19 @@ class RecommendationException(Exception):
         self.status_code = status_code
 
 
+RecommendationException = RecommendationError
+
+
 def register_exception_handlers(
     app: FastAPI,
 ):
 
     @app.exception_handler(
-        RecommendationException
+        RecommendationError
     )
     async def recommendation_exception_handler(
         request: Request,
-        exc: RecommendationException,
+        exc: RecommendationError,
     ):
 
         return JSONResponse(

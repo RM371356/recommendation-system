@@ -54,8 +54,55 @@ src/
 
 # Instalação
 
+## Opção 1 — Ambiente completo com `uv` (recomendada)
+
+Instala todas as dependências (runtime + dev) exatamente como estão fixadas no `uv.lock`:
+
 ```bash
 uv sync
+```
+
+## Opção 2 — Instalação via `pip` (fallback)
+
+Caso o `uv` não esteja disponível na máquina, é possível instalar tudo com `pip` a partir do `pyproject.toml`:
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate            # PowerShell / CMD (Windows)
+# source .venv/bin/activate       # Linux / macOS
+
+pip install -e ".[dev]"
+```
+
+## Dependências necessárias para executar os testes
+
+A suíte de testes foi projetada para funcionar com o mesmo conjunto de dependências do projeto. Nenhuma dependência adicional foi adicionada ao `pyproject.toml`. Se você optar por instalar manualmente, o mínimo requerido é:
+
+**Runtime (obrigatórias):**
+
+* `pandas>=2.2.2`
+* `numpy>=2.1.0`
+* `scikit-learn>=1.5.1`
+* `torch>=2.4.0`
+* `mlflow>=2.16.0`
+* `pydantic>=2.8.2`
+* `pydantic-settings>=2.4.0`
+* `python-dotenv>=1.0.1`
+* `tqdm>=4.66.5`
+* `fastapi` (para os endpoints REST)
+* `httpx` (necessário para o `TestClient` do FastAPI)
+
+**Desenvolvimento / testes:**
+
+* `pytest>=8.3.2`
+* `pytest-cov>=5.0.0`
+* `ruff>=0.6.4`
+
+Instalação manual mínima (fora do `uv`) para rodar apenas os testes:
+
+```bash
+pip install pytest pytest-cov httpx pydantic-settings python-dotenv \
+            pandas numpy scikit-learn torch mlflow tqdm fastapi
 ```
 
 ---
@@ -143,7 +190,7 @@ FastAPI
 * Checkpoint completo do modelo
 * Camada de inferência profissional
 * Docker
-* Testes automatizados
+* Testes automatizados ✔ (ver seção **Testes automatizados**)
 * CI/CD
 
 ---
@@ -438,9 +485,120 @@ Git Commit
 
 Essa abordagem garante que o código permaneça padronizado, que o pipeline de Machine Learning seja reproduzível e que todos os experimentos fiquem devidamente registrados.
 
+---
+
+# Testes automatizados
+
+O projeto conta com uma suíte de **143 testes** distribuídos em **8 categorias**, com foco em cobertura funcional, de contrato, segurança e resiliência da API de recomendação. Toda a suíte roda em uma máquina limpa (sem exigir artefatos treinados) em cerca de **6 segundos**.
+
+## Estrutura da suíte
+
+```text
+tests/
+├── conftest.py                        # Fixtures compartilhadas
+├── smoke/                             # Smoke tests (build sanity)
+├── functional/                        # Regras de negócio isoladas
+├── api/                               # Contrato REST + schemas Pydantic
+├── integration/                       # Fluxo end-to-end da inferência
+├── security/                          # Vulnerabilidades / ataques simulados
+├── resilience/                        # Fallback e tratamento de erros
+├── data/                              # Qualidade e integridade dos dados
+└── performance/                       # Latência (soft budgets)
+```
+
+## Categorias e cobertura
+
+| Categoria       | Marker         | O que valida |
+| --------------- | -------------- | ------------ |
+| **Smoke**       | `smoke`        | Imports do pacote `src`, boot do FastAPI, OpenAPI disponível |
+| **Funcional**   | `functional`   | `RatingBinarizer`, `RecommendationMetrics`, `MLPRecommender`, `ModelFactory`, `EarlyStopping`, `negative_sampling`, `set_seed`, `InferenceCache`, `RatingsDataset` |
+| **API**         | `api`          | Contrato dos schemas Pydantic (`RecommendationRequest/Response`, `HealthResponse`) e formato das rotas REST |
+| **Integração**  | `integration`  | Pipeline `ModelLoader → EncoderLoader → MovieRepository → Predictor → RecommendationService` com artefatos fake em `tmp_path` |
+| **Segurança**   | `security`     | Injection (SQLi, XSS, Log4Shell), path traversal, boundary attacks, tipos maliciosos, JSON malformado, HTTP verbs indevidos, information disclosure |
+| **Resiliência** | `resilience`   | Comportamento com artefatos ausentes, `FileNotFoundError`, cold-start, exception handlers |
+| **Dados**       | `data`         | Schema dos splits (`train.csv`, `val.csv`, `test.csv`), ausência de nulos, labels binárias, ratings em `[0.5, 5.0]`, ausência de vazamento entre splits |
+| **Performance** | `performance`  | Soft budgets de latência (`/health` < 500ms, `/recommend` < 2s, forward do modelo < 500ms) |
+
+## Executando os testes
+
+Rodar a suíte completa:
+
+```bash
+uv run pytest
+```
+
+ou, sem `uv`:
+
+```bash
+pytest
+```
+
+Rodar apenas uma categoria via marker:
+
+```bash
+pytest -m smoke
+pytest -m security
+pytest -m "not performance"          # exclui performance (útil em CI rápido)
+pytest -m "security or resilience"
+```
+
+Rodar apenas os arquivos de um diretório:
+
+```bash
+pytest tests/integration
+pytest tests/api -v
+```
+
+## Cobertura de código
+
+O `pytest-cov` já está incluído nas dependências de desenvolvimento:
+
+```bash
+pytest --cov=src --cov-report=term-missing
+pytest --cov=src --cov-report=html    # gera htmlcov/index.html
+```
+
+## Fixtures principais (`tests/conftest.py`)
+
+| Fixture                    | Escopo   | Descrição |
+| -------------------------- | -------- | --------- |
+| `_reset_inference_cache`   | autouse  | Zera o `InferenceCache` singleton **e** invalida o `lru_cache` do `get_recommendation_service` antes/depois de cada teste, garantindo determinismo entre casos |
+| `api_client`               | function | `TestClient` da FastAPI executando o `lifespan` real (com fallback natural quando não há artefatos) |
+| `synthetic_ratings_df`     | function | DataFrame estilo MovieLens determinístico (seed=42) para testes de preprocess |
+| `encoded_ratings_df`       | function | DataFrame já com colunas `label`, `user_idx`, `movie_idx` |
+| `fake_artifacts_dir`       | function | Gera em `tmp_path` uma pasta `artifacts/` completa (modelo MLP mínimo, `config.json`, encoders `.pkl`, `movies.csv`) permitindo exercitar o fluxo real de inferência sem depender de modelo treinado |
+
+## Markers registrados
+
+Os markers estão declarados em `[tool.pytest.ini_options]` do `pyproject.toml`:
+
+```toml
+markers = [
+    "smoke: testes de smoke (fumaça) — validação mínima do build",
+    "functional: testes unitários das regras de negócio",
+    "api: testes de contrato dos endpoints REST e schemas",
+    "integration: testes de integração end-to-end da inferência",
+    "security: testes de segurança / vulnerabilidade",
+    "resilience: testes de resiliência e tratamento de erros",
+    "data: testes de qualidade / integridade dos dados",
+    "performance: testes de performance (soft budgets)",
+]
+```
+
+## Fluxo recomendado antes do commit
+
+```bash
+uv run ruff check . --fix
+
+uv run ruff format .
+
+uv run pytest
+```
+
+---
+
 # Licença
 
 Projeto desenvolvido para fins acadêmicos (Tech Challenge).
-=======
+
 Projeto de Recomendação da FIAP
->>>>>>> bb88f6dca1e1bace9202d3afa24a5d18ee7dbf70

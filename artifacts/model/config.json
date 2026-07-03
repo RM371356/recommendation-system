@@ -1,6 +1,0 @@
-{
-    "model_name": "mlp",
-    "n_users": 668,
-    "n_items": 10125,
-    "embedding_dim": 64
-}
