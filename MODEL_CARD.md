@@ -30,9 +30,9 @@
 | **Versão** | 1.0.0 |
 | **Tipo** | Rede Neural Multicamada (MLP) com Embeddings |
 | **Framework** | PyTorch |
-| **Tarefa** | Filtragem Colaborativa — Recomendação de Filmes |
+| **Tarefa** | Filtragem Colaborativa — Recomendação de Filmes (classificação binária: nota ≥ 4 → "gostou") |
 | **Dataset** | MovieLens |
-| **Status** | Produção (registrado no MLflow Model Registry) |
+| **Status** | Acadêmico — artefatos versionados via DVC e experimentos rastreados no MLflow (Model Registry planejado como próximo passo) |
 
 Este modelo implementa um sistema de recomendação de filmes baseado em aprendizado profundo. A partir do histórico de interações entre usuários e filmes, o modelo aprende representações latentes (embeddings) que capturam padrões de preferência e realiza predições personalizadas de filmes para cada usuário.
 
@@ -82,10 +82,10 @@ data/
 
 ### Pré-processamento Aplicado
 
-- Filtragem de usuários com menos de 20 avaliações
-- Normalização das avaliações para o intervalo [0, 1]
+- Binarização das avaliações: `label = 1` se a nota ≥ 4, caso contrário `0` (a tarefa é tratada como classificação binária de "gostou / não gostou")
+- Amostragem determinística (seed 42) para até 100 mil interações quando o dataset é maior
 - Codificação de usuários e filmes com `LabelEncoder`
-- Divisão temporal em treino (80%) e teste (20%)
+- Divisão estratificada por `label` em treino (70%), validação (15%) e teste (15%)
 - Persistência dos encoders em `artifacts/encoders/`
 
 ---
@@ -98,38 +98,42 @@ O modelo é uma rede MLP com camadas de embedding que aprende representações d
 
 ```
 Entrada
-  ├── Embedding de Usuário  (user_id → vetor denso)
-  └── Embedding de Filme    (movie_id → vetor denso)
+  ├── Embedding de Usuário  (user_id → vetor denso, dim=64)
+  └── Embedding de Filme    (movie_id → vetor denso, dim=64)
         │
         ▼
-  Concatenação dos Embeddings
+  Concatenação dos Embeddings (128 dimensões)
         │
         ▼
   Camadas Totalmente Conectadas
-  ├── Linear → BatchNorm → ReLU → Dropout
-  ├── Linear → BatchNorm → ReLU → Dropout
-  └── Linear → BatchNorm → ReLU → Dropout
+  ├── Linear(128 → 128) → ReLU → Dropout(0.2)
+  ├── Linear(128 → 64)  → ReLU
+  └── Linear(64 → 1)    → logit
         │
         ▼
-  Camada de Saída (predição de rating)
+  Saída: logit único (probabilidade de "gostar")
         │
         ▼
-  Sigmoid → Escala [0, 1]
+  Sigmoid aplicado na inferência → score em [0, 1]
 ```
+
+> A perda `BCEWithLogitsLoss` aplica a sigmoid internamente durante o treino;
+> por isso a camada final devolve o *logit* e a sigmoid é aplicada apenas na
+> inferência/avaliação para obter o score de probabilidade.
 
 ### Hiperparâmetros
 
 | Parâmetro | Valor |
 |---|---|
 | Dimensão dos Embeddings | 64 |
-| Camadas ocultas | [256, 128, 64] |
-| Dropout | 0.3 |
-| Função de perda | MSELoss |
+| Camadas ocultas | [128, 64] |
+| Dropout | 0.2 |
+| Função de perda | BCEWithLogitsLoss |
 | Otimizador | Adam |
 | Learning rate | 0.001 |
-| Batch size | 512 |
-| Épocas máximas | 50 |
-| Early stopping (patience) | 5 épocas |
+| Batch size | 1024 |
+| Épocas máximas | 10 |
+| Early stopping (patience) | 3 épocas |
 | Seed fixado | 42 |
 
 ### Reprodutibilidade
@@ -181,8 +185,12 @@ O modelo é comparado com dois baselines do Scikit-Learn para validar o ganho ob
 
 | Modelo | Accuracy | Precision | Recall | F1 Score |
 |---|---|---|---|---|
-| Baseline (referência) | — | — | — | — |
-| **MLP PyTorch (este modelo)** | **0.7012** | **0.6901** | **0.7137** | **0.7017** |
+| Baseline (`DummyClassifier`, referência) | — | — | — | — |
+| **MLP PyTorch (este modelo)** | **0.7007** | **0.6893** | **0.7142** | **0.7015** |
+
+> Métricas calculadas no split de teste com `seed=42` (reprodutíveis). A tarefa
+> é uma classificação binária (nota ≥ 4 → "gostou"), o que torna
+> Accuracy/Precision/Recall/F1 as métricas apropriadas.
 
 
 Os resultados de cada experimento estão disponíveis no MLflow Tracking Server e os artefatos em:
@@ -299,9 +307,10 @@ docker-compose up --build
 Todos os experimentos são rastreados com **MLflow**, incluindo:
 
 - Hiperparâmetros utilizados em cada run
-- Métricas de treino e validação por época
+- Métricas de treino e validação por época (`train_loss` / `val_loss`)
+- Métricas de teste (accuracy, precision, recall, F1)
 - Artefatos gerados (modelo, encoders, métricas)
-- Versões do modelo no Model Registry (Staging → Production)
+- Versionamento no Model Registry (Staging → Production) previsto como evolução futura
 
 Para visualizar os experimentos:
 
